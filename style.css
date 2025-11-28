@@ -1,0 +1,64 @@
+body {
+  margin: 0;
+  background: #f4f4ef;
+  font-family: "Times New Roman", Times, serif;
+  overflow-x: hidden;
+}
+
+/* Tag panel (will fill later) */
+#tag-panel {
+  position: fixed;
+  left: 20px;
+  top: 20px;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(6px);
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 10000;
+}
+
+/* The main collage container */
+#collage {
+  position: relative;
+  width: 100%;
+  height: 5000px; /* Very tall so items can scatter down the page */
+}
+
+/* Each draggable piece */
+.card {
+  position: absolute;
+  width: 350px;
+  background: white;
+  padding: 10px;
+  border-radius: 0px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  cursor: grab;
+  transition: transform 0.25s ease;
+}
+
+.card:active {
+  cursor: grabbing;
+  transform: scale(1.02);
+}
+
+/* If it’s an image block */
+.card img {
+  width: 100%;
+  border-radius: 0px;
+}
+
+/* If it’s a webpage block */
+.card iframe {
+  width: 100%;
+  height: 250px;
+  border: none;
+  border-radius: 0px;
+}
+
+/* Title styling */
+.card-title {
+  font-weight: bold;
+  margin: 8px 0;
+  font-size: 15px;
+}
