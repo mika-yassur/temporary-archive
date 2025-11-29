@@ -62,3 +62,25 @@ body {
   margin: 8px 0;
   font-size: 15px;
 }
+
+#tag-sidebar {
+  position: fixed;
+  left: 20px;
+  top: 20px;
+  width: 180px;
+  z-index: 9999;
+}
+
+.tag-button {
+  display: block;
+  margin-bottom: 6px;
+  padding: 4px 6px;
+  background: white;
+  border: 1px solid black;
+  font-family: "Times New Roman", serif;
+  cursor: pointer;
+}
+
+#collage {
+  position: relative;
+}

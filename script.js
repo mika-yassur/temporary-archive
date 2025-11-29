@@ -1,11 +1,75 @@
-async function loadArena() {
-  const res = await fetch("arena-data.json");
-  const items = await res.json();
-  buildCollage(items);
+/*****************************************************
+ * 1. LOAD + MERGE ARENA DATA WITH TAG TEMPLATE
+ *****************************************************/
+async function loadData() {
+  // Load content items
+  const items = await fetch("arena-data.json").then(r => r.json());
+
+  // Load tag definitions (your partially-filled file)
+  const tagTemplate = await fetch("tag-template.json").then(r => r.json());
+
+  // Create lookup table: { itemID → [tags] }
+  const tagMap = Object.fromEntries(
+    tagTemplate.map(t => [t.id, t.tags])
+  );
+
+  // Merge tags onto items; items without tags get []
+  const merged = items.map(item => ({
+    ...item,
+    tags: tagMap[item.id] || []
+  }));
+
+  return merged;
 }
 
+
+/*****************************************************
+ * 2. BUILD TAG SIDEBAR (AUTO-GENERATED FROM TAGS)
+ *****************************************************/
+function buildTagSidebar(items) {
+  const sidebar = document.getElementById("tag-sidebar");
+  sidebar.innerHTML = "";
+
+  // Collect all tags across all items
+  const tagSet = new Set();
+  items.forEach(item => item.tags.forEach(t => tagSet.add(t)));
+
+  // Create a button for each tag
+  [...tagSet].sort().forEach(tag => {
+    const btn = document.createElement("button");
+    btn.className = "tag-button";
+    btn.textContent = tag;
+
+    btn.onclick = () => activateTag(tag);
+    sidebar.appendChild(btn);
+  });
+}
+
+
+/*****************************************************
+ * 3. TAG CLICK → SORT ITEMS (“JUMP TO TOP”)
+ *****************************************************/
+function activateTag(tag) {
+  // Copy array so we don't mutate original
+  const sorted = [...window.ALL_ITEMS].sort((a, b) => {
+    const aHas = a.tags.includes(tag);
+    const bHas = b.tags.includes(tag);
+
+    if (aHas && !bHas) return -1; // a goes up
+    if (!aHas && bHas) return 1;  // b goes up
+    return 0;                     // keep relative order
+  });
+
+  // Rebuild layout with new order
+  buildCollage(sorted);
+}
+
+/*****************************************************
+ * 4. COLLAGE BUILDER (your original code, slightly tuned)
+ *****************************************************/
 function buildCollage(items) {
   const container = document.getElementById("collage");
+  container.innerHTML = ""; // clear old layout
 
   let zCounter = 1;
 
@@ -13,41 +77,43 @@ function buildCollage(items) {
     const card = document.createElement("div");
     card.className = "card";
 
-    // condensed vertical + controlled horizontal scatter
-    const x = Math.random() * (window.innerWidth - 380); // smaller width spacing
-    const y = (i * 180) + (Math.random() * 80);          // condensed vertical
+    /***** POSITIONING — condensed vertical, scattered horizontal *****/
+    const x = Math.random() * (window.innerWidth - 380);
+    const y = (i * 180) + (Math.random() * 80);
+
     card.style.left = `${x}px`;
     card.style.top = `${y}px`;
     card.style.zIndex = zCounter++;
+    card.style.borderRadius = "0px"; // square corners
 
-    // square corners
-    card.style.borderRadius = "0px";
 
-    // card title
+    /***** TITLE *****/
     const titleEl = document.createElement("div");
     titleEl.className = "card-title";
     titleEl.textContent = item.title || "(no title)";
     card.appendChild(titleEl);
 
-    // image block
+
+    /***** IMAGE ITEMS *****/
     if (item.type === "Image" && item.image) {
       const img = document.createElement("img");
       img.src = item.image;
-      img.style.borderRadius = "0px";   // square
-      img.style.width = "100%";         // fit card width
-      img.style.height = "auto";        // maintain aspect ratio
+      img.style.borderRadius = "0px";
+      img.style.width = "100%";
+      img.style.height = "auto";
       card.appendChild(img);
     }
 
-    // link block (iframe)
+
+    /***** LINK ITEMS (iframe, with fallback) *****/
     if (item.type === "Link" && item.url) {
       const iframe = document.createElement("iframe");
       iframe.src = item.url;
-      iframe.style.borderRadius = "0px";  // square
-      iframe.style.width = "100%";        // fit card width
-      iframe.style.height = "250px";      // fixed height
+      iframe.style.borderRadius = "0px";
+      iframe.style.width = "100%";
+      iframe.style.height = "250px";
 
-      // fallback if iframe blocked
+      // fallback for blocked iframe
       const fallback = document.createElement("div");
       fallback.textContent = "Preview unavailable";
       fallback.style.height = "250px";
@@ -66,14 +132,20 @@ function buildCollage(items) {
       card.appendChild(iframe);
     }
 
+
+    /***** DRAGGING *****/
     enableDragging(card, () => {
-      card.style.zIndex = ++zCounter; // bring to front
+      card.style.zIndex = ++zCounter;
     });
 
     container.appendChild(card);
   });
 }
 
+
+/*****************************************************
+ * 5. DRAGGING LOGIC (your original)
+ *****************************************************/
 function enableDragging(el, onActivate) {
   let offsetX = 0, offsetY = 0;
   let dragging = false;
@@ -96,4 +168,12 @@ function enableDragging(el, onActivate) {
   });
 }
 
-loadArena();
+
+/*****************************************************
+ * 6. INITIALIZATION
+ *****************************************************/
+loadData().then(items => {
+  window.ALL_ITEMS = items;        // store globally
+  buildTagSidebar(items);          // build tag UI
+  buildCollage(items);             // draw collage
+});
