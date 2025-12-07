@@ -105,13 +105,13 @@ function buildCollage(items) {
     }
 
 
-    /***** LINK ITEMS (iframe, with fallback) *****/
-    if (item.type === "Link" && item.url) {
-      const iframe = document.createElement("iframe");
-      iframe.src = item.url;
-      iframe.style.borderRadius = "0px";
-      iframe.style.width = "100%";
-      iframe.style.height = "250px";
+/***** LINK ITEMS (iframe, with fallback) *****/
+if (item.type === "Link" && item.url) {
+  const iframe = document.createElement("iframe");
+  iframe.src = item.url;
+  iframe.style.borderRadius = "0px";
+  iframe.style.width = "100%";
+  iframe.style.height = "250px";
 
       // fallback for blocked iframe
       const fallback = document.createElement("div");
